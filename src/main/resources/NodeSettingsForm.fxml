@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.text.*?>
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane minHeight="106.0" minWidth="0.0" prefHeight="106.0" prefWidth="305.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.NodeSettingsFormController">
+<AnchorPane minHeight="106.0" minWidth="0.0" prefHeight="106.0" prefWidth="305.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.NodeSettingsFormController">
    <children>
       <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0">
          <children>
@@ -25,7 +28,7 @@
                   <Label text=" Host IpAddress" />
                   <Label text=" Base Port #" GridPane.rowIndex="1" />
                   <TextField fx:id="hostIPAddress" promptText="Input IP Address" text="192.168.1.6" GridPane.columnIndex="1" />
-                  <TextField fx:id="basePortNum" promptText="Base Port Number" text="65535" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <TextField fx:id="basePortNum" promptText="Base Port Number" text="50000" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                   <TextField fx:id="nodePortAdjuster" promptText="Input Node Port Adjuster" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                   <Label text=" Node Port Adjuster" GridPane.rowIndex="2" />
                </children>

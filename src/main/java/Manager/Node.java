@@ -3,7 +3,10 @@ package Manager;
 import DataStructures.*;
 import javolution.io.Struct;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.*;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -15,28 +18,55 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class Node implements Runnable
 {
 
+    public Integer nodeId;
     private Queue<Struct> commandQueue;
     public Queue<StatusReport> reports;
 
     // tcp socket member fields
+    private String ipAddress;
     private Integer port;
     private ServerSocket serverSocket;
     private DataInputStream inputStream;
     private DataOutputStream outputStream;
 
+    //Property change listener
+    private PropertyChangeSupport support;
+
+
+    public Node(String ipAddress,Integer basePort, Integer portAdjuster) throws IOException
+    {
+        this.ipAddress      = ipAddress;
+        this.port           = basePort + portAdjuster;
+        this.nodeId         = portAdjuster;
+        this.commandQueue   = new ConcurrentLinkedQueue<>();
+        this.reports        = new ConcurrentLinkedQueue<>();
+        this.serverSocket   = new ServerSocket(this.port, 1, InetAddress.getByName(ipAddress));
+        this.support        = new PropertyChangeSupport(this);
+
+    }
 
     public Node(Integer port) throws IOException
     {
-        this.port = port;
-        commandQueue = new ConcurrentLinkedQueue<>();
-        reports = new ConcurrentLinkedQueue<>();
-        serverSocket = new ServerSocket(this.port);
+        this.port       = port;
+        commandQueue    = new ConcurrentLinkedQueue<>();
+        reports         = new ConcurrentLinkedQueue<>();
+        serverSocket    = new ServerSocket(this.port);
     }
 
     public Boolean sendCommand(Struct command)
     {
         this.commandQueue.add(command);
         return this.commandQueue.isEmpty();
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener pcl)
+    {
+        this.support.addPropertyChangeListener(pcl);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener pcl)
+    {
+        support.removePropertyChangeListener(pcl);
     }
 
     @Override
@@ -105,7 +135,6 @@ public class Node implements Runnable
                     }
                 }
 
-
                 try
                 {
                     int size = inputStream.readInt();
@@ -127,6 +156,7 @@ public class Node implements Runnable
                         StatusReport report = new StatusReport();
                         report.setByteBuffer(byteBuff, 0);
                         this.reports.add(report);
+                        this.support.firePropertyChange("Node" + String.valueOf(this.nodeId),null,report);
                     }
                 }
                 catch (IOException e)
