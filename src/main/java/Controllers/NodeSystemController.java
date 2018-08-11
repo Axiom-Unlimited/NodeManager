@@ -1,5 +1,6 @@
 package Controllers;
 
+import DataStructures.CaptureCommand;
 import DataStructures.StatusReport;
 import Manager.Node;
 import javafx.application.Platform;
@@ -16,6 +17,7 @@ import javafx.scene.shape.Rectangle;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,7 +77,44 @@ public class NodeSystemController implements PropertyChangeListener
 
     public void captureCommand(MouseEvent mouseEvent)
     {
-        System.out.println("button pressed!!!!!!!!!!");
+        if (captureButton.getText().equals("Start Capture")) // send a start capture command
+        {
+            String nextCapTitle = captureTitle.getText();
+            CaptureCommand startCapCmd = new CaptureCommand();
+            startCapCmd.setByteBuffer(ByteBuffer.wrap(new byte[startCapCmd.size()]),0);
+            startCapCmd.size.set(startCapCmd.size());
+            startCapCmd.type.set(1);
+            startCapCmd.command.set(1);
+            if (nextCapTitle.equals(""))
+            {
+                startCapCmd.filename.set("none");
+            }
+            else
+            {
+                startCapCmd.filename.set(nextCapTitle);
+            }
+
+
+            for (Node node : this.cameraNodes)
+            {
+                node.sendCommand(startCapCmd);
+            }
+            captureButton.setText("Stop Capture"); // set capture button to show stop
+        }
+        else // send a stop capture command
+        {
+            CaptureCommand startCapCmd = new CaptureCommand();
+            startCapCmd.setByteBuffer(ByteBuffer.wrap(new byte[startCapCmd.size()]),0);
+            startCapCmd.size.set(startCapCmd.size());
+            startCapCmd.type.set(1);
+            startCapCmd.command.set(0);
+
+            for (Node node : this.cameraNodes)
+            {
+                node.sendCommand(startCapCmd);
+            }
+            captureButton.setText("Start Capture"); // set capture button to show start
+        }
     }
 
     public void saveConfiguration(MouseEvent mouseEvent)
@@ -89,7 +128,6 @@ public class NodeSystemController implements PropertyChangeListener
         StatusReport statusReport = (StatusReport) evt.getNewValue();
 
         Platform.runLater(()->{
-            Label changeLabel = null;
             Rectangle capLight = null;
             for(javafx.scene.Node anchorPane : this.nodeList.getChildren())
             {
@@ -102,7 +140,6 @@ public class NodeSystemController implements PropertyChangeListener
                 Label tempLabel = ((Label)((AnchorPane)((SplitPane)temp.getChildren().get(0)).getItems().get(0)).getChildren().get(0));
                 if (tempLabel.getText().equals(nodeId))
                 {
-                    changeLabel = tempLabel;
                     capLight = (Rectangle) ((AnchorPane)((SplitPane)temp.getChildren().get(0)).getItems().get(1)).getChildren().get(0);
                     break;
                 }

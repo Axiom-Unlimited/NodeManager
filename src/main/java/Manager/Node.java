@@ -103,6 +103,7 @@ public class Node extends Task
         {
             while (connectionSocket.isConnected())
             {
+                System.out.println(connectionSocket.isConnected());
                 while (!this.commandQueue.isEmpty())
                 {
                     Struct cmd = this.commandQueue.poll();
@@ -144,6 +145,11 @@ public class Node extends Task
 
                     int size = inputStream.readInt();
                     System.out.println("data size: " + String.valueOf(size));
+                    if (size == 0)
+                    {
+                        continue;
+                    }
+
                     byte[] inputByteBuff = new byte[size];
                     inputByteBuff[0] = (byte) ((size & 0xf000) >> 3);
                     inputByteBuff[1] = (byte) ((size & 0x0f00) >> 2);
@@ -158,7 +164,6 @@ public class Node extends Task
                     }
                     else
                     {
-                        System.out.println("received a message from the node!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                         ByteBuffer byteBuff = ByteBuffer.wrap(inputByteBuff);
                         StatusReport report = new StatusReport();
                         report.setByteBuffer(byteBuff, 0);
@@ -173,6 +178,7 @@ public class Node extends Task
 
             }
         }
+        System.out.println("shit broke!!!");
         return null;
     }
 }
