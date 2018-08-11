@@ -1,6 +1,7 @@
 package Manager;
 
 import DataStructures.*;
+import javafx.concurrent.Task;
 import javolution.io.Struct;
 
 import java.beans.PropertyChangeListener;
@@ -10,12 +11,11 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.channels.Selector;
 import java.time.Instant;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class Node implements Runnable
+public class Node extends Task
 {
 
     public Integer nodeId;
@@ -70,15 +70,16 @@ public class Node implements Runnable
     }
 
     @Override
-    public void run()
+    public Object call()
     {
         //set up connection stuff
         Socket connectionSocket = null;
         try
         {
+            System.out.println("attempting socket connection!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             connectionSocket = serverSocket.accept();
             connectionSocket.setKeepAlive(true);
-            connectionSocket.setSoTimeout(1);
+            connectionSocket.setSoTimeout(10);
             this.inputStream = new DataInputStream(connectionSocket.getInputStream());
             this.outputStream = new DataOutputStream(connectionSocket.getOutputStream());
 
@@ -120,14 +121,17 @@ public class Node implements Runnable
                 if (NOW_MILLI - LAST_MILLI >= 10) // test if 10 milliseconds have elapsed
                 {
                     StatusRequest statusRequest = new StatusRequest();
+                    statusRequest.setByteBuffer(ByteBuffer.wrap(new byte[8]),0);
                     int size = statusRequest.size();
                     statusRequest.type.set(0);
                     statusRequest.size.set(size);
-                    ByteBuffer statReqBuff = statusRequest.getByteBuffer();
 
                     try
                     {
-                        this.outputStream.write(statReqBuff.array(), 0, size);
+                        if (!statusRequest.getByteBuffer().hasArray()){
+                            System.out.println("there is no array!!!!!!");
+                        }
+                        this.outputStream.write(statusRequest.getByteBuffer().array(), 0, size);
                     }
                     catch (IOException e)
                     {
@@ -137,7 +141,9 @@ public class Node implements Runnable
 
                 try
                 {
+
                     int size = inputStream.readInt();
+                    System.out.println("data size: " + String.valueOf(size));
                     byte[] inputByteBuff = new byte[size];
                     inputByteBuff[0] = (byte) ((size & 0xf000) >> 3);
                     inputByteBuff[1] = (byte) ((size & 0x0f00) >> 2);
@@ -152,6 +158,7 @@ public class Node implements Runnable
                     }
                     else
                     {
+                        System.out.println("received a message from the node!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                         ByteBuffer byteBuff = ByteBuffer.wrap(inputByteBuff);
                         StatusReport report = new StatusReport();
                         report.setByteBuffer(byteBuff, 0);
@@ -166,5 +173,6 @@ public class Node implements Runnable
 
             }
         }
+        return null;
     }
 }

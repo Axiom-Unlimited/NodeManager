@@ -61,9 +61,9 @@ public class NodeSystemController implements PropertyChangeListener
         }
 
         // add the gui nodes to the nodes list
-        for (int i = 1; i < cameraGuiNodes.size(); i++)
+        for (int i = 0; i < cameraGuiNodes.size(); i++)
         {
-            this.nodeList.add(cameraGuiNodes.get(i-1),0,i-1);
+            this.nodeList.add(cameraGuiNodes.get(i),0,i);
         }
 
         // start the threads
@@ -85,25 +85,31 @@ public class NodeSystemController implements PropertyChangeListener
     @Override
     public void propertyChange(PropertyChangeEvent evt)
     {
-        String nodeId = evt.getPropertyName();
+        String nodeId = " " + evt.getPropertyName();
         StatusReport statusReport = (StatusReport) evt.getNewValue();
-        Label changeLabel = null;
-        Rectangle capLight = null;
-        for(javafx.scene.Node anchorPane : this.nodeList.getChildren())
-        {
-            AnchorPane temp = (AnchorPane) anchorPane;
-            Label tempLabel = ((Label)((AnchorPane)((SplitPane)temp.getChildren().get(0)).getItems().get(0)).getChildren().get(0));
-            if (tempLabel.getText().equals(nodeId))
+
+        Platform.runLater(()->{
+            Label changeLabel = null;
+            Rectangle capLight = null;
+            for(javafx.scene.Node anchorPane : this.nodeList.getChildren())
             {
-                changeLabel = tempLabel;
-                capLight = (Rectangle) ((AnchorPane)((SplitPane)temp.getChildren().get(0)).getItems().get(1)).getChildren().get(0);
-                break;
+                Class clazz = anchorPane.getClass();
+                if (!clazz.getName().equals("javafx.scene.layout.AnchorPane"))
+                {
+                    continue;
+                }
+                AnchorPane temp = (AnchorPane) anchorPane;
+                Label tempLabel = ((Label)((AnchorPane)((SplitPane)temp.getChildren().get(0)).getItems().get(0)).getChildren().get(0));
+                if (tempLabel.getText().equals(nodeId))
+                {
+                    changeLabel = tempLabel;
+                    capLight = (Rectangle) ((AnchorPane)((SplitPane)temp.getChildren().get(0)).getItems().get(1)).getChildren().get(0);
+                    break;
+                }
+
             }
 
-        }
-
-        Rectangle finalCapLight = capLight;
-        Platform.runLater(()->{
+            Rectangle finalCapLight = capLight;
             if (statusReport.status.get() == 0) // node is not capturing
             {
                 assert finalCapLight != null;
