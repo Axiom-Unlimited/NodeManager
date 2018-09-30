@@ -13,6 +13,7 @@ import javafx.stage.Stage;
 
 import javax.xml.soap.Text;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -65,6 +66,8 @@ public class HomeController
                 //set default node port adjuster
                 TextField refNodePortAdj = ((TextField)node.lookup("#nodePortAdjuster"));
                 refNodePortAdj.setText(String.valueOf(i));
+                TextField refNodeServerIpAddress = ((TextField)node.lookup("#hostIPAddress"));
+                refNodeServerIpAddress.setText(InetAddress.getLocalHost().getHostAddress());
                 this.nodePane.add(node,0,i);
 
             }
@@ -72,7 +75,6 @@ public class HomeController
             {
                 e.printStackTrace();
             }
-
         }
 
         this.buildNodeSystemButton.visibleProperty().setValue(true);
@@ -101,13 +103,20 @@ public class HomeController
                 TextField nodePortAdjuster  = (TextField)   children.get(i).lookup("#nodePortAdjuster");
                 Label nodeLabel             = (Label)       children.get(i).lookup("#nodeLabel");
 
-                AnchorPane cameraGUINode = FXMLLoader.load(getClass().getResource("/CameraNode.fxml"));
-                Optional<Node> anchorPane = ((SplitPane)cameraGUINode.getChildren().get(0)).getItems().stream().findAny().filter(node -> node.getId().equals("labelHolder"));
+                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/CameraNode.fxml"));
+//                AnchorPane cameraGUINode = FXMLLoader.load(getClass().getResource("/CameraNode.fxml"));
+                Manager.Node nodeController = new Manager.Node(hostIpAddress.getText(),Integer.parseInt(basePortNum.getText()), Integer.parseInt(nodePortAdjuster.getText()));
+
+                fxmlLoader.setController(nodeController);
+
+                AnchorPane cameraGUINode = fxmlLoader.load();
+                //todo: there has to be a better way of doing this, will probably have to use recursion!!!!
+                Optional<Node> anchorPane = ((SplitPane)((AnchorPane)((SplitPane)cameraGUINode.getChildren().get(0)).getItems().get(0)).getChildren().get(0)).getItems().stream().findAny().filter(node -> node.getId().equals("labelHolder"));
                 Label tempLabel = (Label)anchorPane.get().lookup("#nodeLabel");
                 tempLabel.setText(" " + nodeLabel.getText());
                 cameraNodesGUI.add(cameraGUINode);
 
-                cameraNodes.add(new Manager.Node(hostIpAddress.getText(),Integer.parseInt(basePortNum.getText()), Integer.parseInt(nodePortAdjuster.getText())));
+                cameraNodes.add(nodeController);
             }
 
             controller.setCameraNodes(cameraNodes,cameraNodesGUI);

@@ -5,10 +5,7 @@ import DataStructures.StatusReport;
 import Manager.Node;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
@@ -17,6 +14,9 @@ import javafx.scene.shape.Rectangle;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,19 +42,32 @@ public class NodeSystemController implements PropertyChangeListener
     @FXML
     public Button saveConfigButton;
 
+    @FXML
+    public TextArea consoleOutput;
+
     private List<Node> cameraNodes;
     private List<Thread> cameraThreads;
+    private StringBuilder stringBuilder;
+    private PrintStream printStream;
+    private Console console;
 
 
     public NodeSystemController()
     {
         cameraThreads = new ArrayList<>();
+        stringBuilder = new StringBuilder(100);
+
 //        Thread updateThread = new Thread(new UpdateClass());
 //        updateThread.start();
     }
 
     public void setCameraNodes(List<Node> cameraNodes, List<AnchorPane> cameraGuiNodes)
     {
+        console = new Console(consoleOutput);
+        printStream = new PrintStream(console,true);
+        System.setOut(printStream);
+        System.setErr(printStream);
+
         this.cameraNodes = cameraNodes;
         for (Node node : this.cameraNodes )
         {
@@ -157,28 +170,25 @@ public class NodeSystemController implements PropertyChangeListener
                 assert finalCapLight != null;
                 finalCapLight.setFill(Color.GREEN);
             }
-
         });
     }
-//
-//    class UpdateClass extends Task
-//    {
-//        @Override
-//        protected Object call() throws Exception
-//        {
-//            try
-//            {
-//                sleep(10);
-//                while(true)
-//                {
-//                }
-//            }
-//            catch (InterruptedException e)
-//            {
-//                e.printStackTrace();
-//            }
-//
-//            return null;
-//        }
-//    }
+
+    public static class Console extends OutputStream
+    {
+
+        private TextArea output;
+
+        public Console(TextArea ta) {
+            this.output = ta;
+        }
+
+        @Override
+        public void write(int i) throws IOException
+        {
+            Platform.runLater(()->{
+                output.appendText(String.valueOf((char) i));
+            });
+
+        }
+    }
 }

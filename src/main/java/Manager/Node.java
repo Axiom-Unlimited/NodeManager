@@ -2,6 +2,10 @@ package Manager;
 
 import DataStructures.*;
 import javafx.concurrent.Task;
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import javolution.io.Struct;
 
 import java.beans.PropertyChangeListener;
@@ -17,6 +21,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Node extends Task
 {
+
+    @FXML
+    public Button nodeCaptureButton;
+
+    @FXML
+    public TextField filename;
 
     public Integer nodeId;
     private Queue<Struct> commandQueue;
@@ -35,14 +45,13 @@ public class Node extends Task
 
     public Node(String ipAddress,Integer basePort, Integer portAdjuster) throws IOException
     {
-        this.ipAddress      = ipAddress;
-        this.port           = basePort + portAdjuster;
-        this.nodeId         = portAdjuster;
-        this.commandQueue   = new ConcurrentLinkedQueue<>();
-        this.reports        = new ConcurrentLinkedQueue<>();
-        this.serverSocket   = new ServerSocket(this.port, 1, InetAddress.getByName(ipAddress));
-        this.support        = new PropertyChangeSupport(this);
-
+        this.ipAddress          = ipAddress;
+        this.port               = basePort + portAdjuster;
+        this.nodeId             = portAdjuster;
+        this.commandQueue       = new ConcurrentLinkedQueue<>();
+        this.reports            = new ConcurrentLinkedQueue<>();
+        this.serverSocket       = new ServerSocket(this.port, 1, InetAddress.getByName(ipAddress));
+        this.support            = new PropertyChangeSupport(this);
     }
 
     public Node(Integer port) throws IOException
@@ -58,6 +67,43 @@ public class Node extends Task
         this.commandQueue.add(command);
         return this.commandQueue.isEmpty();
     }
+
+    public void sendCaptureCommand(MouseEvent mouseEvent)
+    {
+        if (nodeCaptureButton.getText().equals("Start Capture")) // send a start capture command
+        {
+            String nextCapTitle = filename.getText();
+            CaptureCommand startCapCmd = new CaptureCommand();
+            startCapCmd.setByteBuffer(ByteBuffer.wrap(new byte[startCapCmd.size()]),0);
+            startCapCmd.size.set(startCapCmd.size());
+            startCapCmd.type.set(1);
+            startCapCmd.command.set(1);
+            if (nextCapTitle.equals(""))
+            {
+                startCapCmd.filename.set("none");
+            }
+            else
+            {
+                startCapCmd.filename.set(nextCapTitle);
+            }
+
+
+            this.sendCommand(startCapCmd);
+            nodeCaptureButton.setText("Stop Capture"); // set capture button to show stop
+        }
+        else // send a stop capture command
+        {
+            CaptureCommand startCapCmd = new CaptureCommand();
+            startCapCmd.setByteBuffer(ByteBuffer.wrap(new byte[startCapCmd.size()]),0);
+            startCapCmd.size.set(startCapCmd.size());
+            startCapCmd.type.set(1);
+            startCapCmd.command.set(0);
+
+            this.sendCommand(startCapCmd);
+            nodeCaptureButton.setText("Start Capture"); // set capture button to show start
+        }
+    }
+
 
     public void addPropertyChangeListener(PropertyChangeListener pcl)
     {
@@ -76,7 +122,7 @@ public class Node extends Task
         Socket connectionSocket = null;
         try
         {
-            System.out.println("attempting socket connection!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            System.out.println(nodeId.toString() + ": " + "attempting socket connection!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             connectionSocket = serverSocket.accept();
             connectionSocket.setKeepAlive(true);
             connectionSocket.setSoTimeout(10);
@@ -97,13 +143,12 @@ public class Node extends Task
         // thread loop
         if (connectionSocket == null)
         {
-            System.out.println("failed to get tcp connection...");
+            System.out.println(nodeId.toString() + ": " + "failed to get tcp connection...");
         }
         else
         {
             while (connectionSocket.isConnected())
             {
-                System.out.println(connectionSocket.isConnected());
                 while (!this.commandQueue.isEmpty())
                 {
                     Struct cmd = this.commandQueue.poll();
@@ -130,7 +175,7 @@ public class Node extends Task
                     try
                     {
                         if (!statusRequest.getByteBuffer().hasArray()){
-                            System.out.println("there is no array!!!!!!");
+                            System.out.println(nodeId.toString() + ": " + "there is no array!!!!!!");
                         }
                         this.outputStream.write(statusRequest.getByteBuffer().array(), 0, size);
                     }
@@ -144,23 +189,30 @@ public class Node extends Task
                 {
 
                     int size = inputStream.readInt();
-                    System.out.println("data size: " + String.valueOf(size));
+
                     if (size == 0)
                     {
                         continue;
                     }
 
                     byte[] inputByteBuff = new byte[size];
-                    inputByteBuff[0] = (byte) ((size & 0xf000) >> 3);
-                    inputByteBuff[1] = (byte) ((size & 0x0f00) >> 2);
-                    inputByteBuff[2] = (byte) ((size & 0x00f0) >> 1);
-                    inputByteBuff[3] = (byte) (size & 0x000f);
+                    try
+                    {
+                        inputByteBuff[0] = (byte) ((size & 0xf000) >> 3);
+                        inputByteBuff[1] = (byte) ((size & 0x0f00) >> 2);
+                        inputByteBuff[2] = (byte) ((size & 0x00f0) >> 1);
+                        inputByteBuff[3] = (byte) (size & 0x000f);
+                    }
+                    catch (Exception e)
+                    {
+                        continue;
+                    }
 
                     //todo: this should read all of the message as the messages being sent are not that large, may need to modify though.
                     int ret = this.inputStream.read(inputByteBuff, 4, size - 4);
                     if (ret == 0)
                     {
-                        System.out.println("no bytes read...");
+                        System.out.println(nodeId.toString() + ": " + "no bytes read...");
                     }
                     else
                     {
@@ -173,12 +225,11 @@ public class Node extends Task
                 }
                 catch (IOException e)
                 {
-                    System.out.println("input timed out, no message...");
+                    System.out.println(nodeId.toString() + ": " + "input timed out, no message...");
                 }
-
             }
         }
-        System.out.println("shit broke!!!");
+        System.out.println(nodeId.toString() + ": " + "shit broke!!!");
         return null;
     }
 }

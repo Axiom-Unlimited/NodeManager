@@ -1,22 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.shape.Rectangle?>
 
-<AnchorPane prefHeight="30.0" prefWidth="129.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane prefHeight="80.0" prefWidth="285.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <SplitPane dividerPositions="0.7131782945736435" layoutX="-26.0" layoutY="-56.0" prefHeight="160.0" prefWidth="200.0" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0">
+      <SplitPane dividerPositions="0.5125" orientation="VERTICAL" prefHeight="101.0" prefWidth="216.0" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0">
         <items>
-          <AnchorPane fx:id="labelHolder" minHeight="0.0" minWidth="100.0" prefHeight="160.0" prefWidth="100.0">
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                <children>
-                  <Label fx:id="nodeLabel" layoutX="38.0" layoutY="16.0" text=" Camera Node" textAlignment="CENTER" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0" />
+                  <SplitPane dividerPositions="0.48130841121495327, 0.6822429906542056" prefHeight="160.0" prefWidth="200.0" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0">
+                    <items>
+                      <AnchorPane fx:id="labelHolder" minHeight="0.0" minWidth="100.0" prefHeight="160.0" prefWidth="100.0">
+                           <children>
+                              <Label fx:id="nodeLabel" layoutX="38.0" layoutY="16.0" text=" Camera Node" textAlignment="CENTER" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0" />
+                           </children>
+                        </AnchorPane>
+                      <AnchorPane minHeight="0.0" minWidth="25.0" prefHeight="38.0" prefWidth="36.0">
+                           <children>
+                              <Rectangle fx:id="captureLight" arcHeight="5.0" arcWidth="5.0" fill="#ff1f1f" height="50.0" layoutX="-81.0" layoutY="-76.0" stroke="BLACK" strokeType="INSIDE" width="51.0" AnchorPane.bottomAnchor="-11.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="-1.0" />
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                           <children>
+                              <Button fx:id="nodeCaptureButton" mnemonicParsing="false" onMouseClicked="#sendCaptureCommand" text="Start Capture" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0" />
+                           </children>
+                        </AnchorPane>
+                    </items>
+                  </SplitPane>
                </children>
             </AnchorPane>
-          <AnchorPane minHeight="0.0" minWidth="25.0" prefHeight="160.0" prefWidth="100.0">
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="0.0" prefWidth="214.0">
                <children>
-                  <Rectangle fx:id="captureLight" arcHeight="5.0" arcWidth="5.0" fill="#ff1f1f" height="50.0" layoutX="-81.0" layoutY="-76.0" stroke="BLACK" strokeType="INSIDE" width="38.0" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="-1.0" />
+                  <TextField fx:id="filename" promptText="filename" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0" />
                </children>
             </AnchorPane>
         </items>

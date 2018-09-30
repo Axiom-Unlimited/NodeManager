@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.shape.*?>
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
@@ -11,7 +7,7 @@
     <children>
       <SplitPane dividerPositions="0.19324577861163228, 0.6735459662288931" prefHeight="540.0" prefWidth="1068.0" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="-1.0">
         <items>
-          <AnchorPane maxWidth="160.0" minHeight="0.0" minWidth="160.0" prefHeight="160.0" prefWidth="100.0">
+          <AnchorPane maxWidth="300.0" minHeight="0.0" minWidth="300.0" prefHeight="160.0" prefWidth="100.0">
                <children>
                   <GridPane fx:id="nodeList" gridLinesVisible="true" layoutX="-25.0" layoutY="179.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0">
                     <columnConstraints>
@@ -20,7 +16,10 @@
                   </GridPane>
                </children>
             </AnchorPane>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0" />
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+               <children>
+                  <TextArea fx:id="consoleOutput" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0" />
+               </children></AnchorPane>
             <AnchorPane maxWidth="361.0" minWidth="361.0" prefHeight="538.0" prefWidth="361.0">
                <children>
                   <GridPane gridLinesVisible="true" layoutX="6.0" prefHeight="90.0" prefWidth="366.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="-1.0">
