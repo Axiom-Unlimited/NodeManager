@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
 <?import java.lang.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.Accordion?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.RowConstraints?>
 
 <Accordion prefHeight="457.0" prefWidth="292.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.HomeController">
    <panes>
@@ -54,6 +54,30 @@
               </items>
             </SplitPane>
          </content>
+      </TitledPane>
+      <TitledPane animated="false" text="Listen for Broadcasts">
+        <content>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+               <children>
+                  <SplitPane dividerPositions="0.14648977335544502" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0">
+                    <items>
+                      <AnchorPane maxWidth="274.0" minHeight="50.0" minWidth="0.0" prefHeight="50.0" prefWidth="274.0">
+                           <children>
+                              <Label layoutX="14.0" layoutY="17.0" text="# of Nodes" />
+                              <TextField fx:id="numNodes" layoutX="84.0" layoutY="13.0" prefHeight="25.0" prefWidth="103.0" />
+                              <Button fx:id="listenButton" layoutX="205.0" layoutY="13.0" mnemonicParsing="false" onMouseClicked="#listenForBroadcasts" text="Listen" />
+                           </children>
+                        </AnchorPane>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                           <children>
+                              <TextArea fx:id="broadcastOutput" layoutX="-1.0" layoutY="-1.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0" />
+                           </children>
+                        </AnchorPane>
+                    </items>
+                  </SplitPane>
+               </children>
+            </AnchorPane>
+        </content>
       </TitledPane>
    </panes>
 </Accordion>

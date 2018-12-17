@@ -13,7 +13,7 @@ import javafx.stage.Stage;
 
 import javax.xml.soap.Text;
 import java.io.IOException;
-import java.net.InetAddress;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -42,6 +42,19 @@ public class HomeController
 
     @FXML
     Button buildNodeSystemButton;
+
+    // broadcast listener variables
+    @FXML
+    TextField numNodes;
+
+    @FXML
+    Button listenButton;
+
+    @FXML
+    TextArea broadcastOutput;
+
+
+
 
     public void buildSystemFromConfigFile(MouseEvent mouseEvent)
     {
@@ -125,6 +138,48 @@ public class HomeController
             secondaryStage.setTitle("Node System");
             secondaryStage.setScene(new Scene(nodeSystem, -1, -1));
             secondaryStage.show();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void listenForBroadcasts(MouseEvent mouseEvent)
+    {
+        int numOfNodes2Find = Integer.parseInt(numNodes.getText());
+        List foundAddresses = new ArrayList<String>();
+
+        try
+        {
+            byte[] buff = new byte[1024];
+            DatagramSocket listenSock = new DatagramSocket();
+            DatagramPacket packet = new DatagramPacket(buff,1024);
+            if (!listenSock.isConnected())
+            {
+                listenSock.connect(InetAddress.getByName("192.168.1.255"),60000);
+            }
+
+            while (foundAddresses.size() <= numOfNodes2Find)
+            {
+                if (listenSock.isConnected())
+                {
+                    listenSock.receive(packet);
+
+                }
+                else
+                {
+                    System.out.println("UDP socket not connected.");
+                }
+            }
+        }
+        catch (SocketException e)
+        {
+            e.printStackTrace();
+        }
+        catch (UnknownHostException e)
+        {
+            e.printStackTrace();
         }
         catch (IOException e)
         {
