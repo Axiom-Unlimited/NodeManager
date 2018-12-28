@@ -54,6 +54,17 @@ public class Node extends Task
         this.support            = new PropertyChangeSupport(this);
     }
 
+    public Node(String ipAddress,Integer basePort) throws IOException
+    {
+        this.ipAddress          = ipAddress;
+        this.port               = basePort;
+        this.nodeId             = basePort - 50000;
+        this.commandQueue       = new ConcurrentLinkedQueue<>();
+        this.reports            = new ConcurrentLinkedQueue<>();
+        this.serverSocket       = new ServerSocket(this.port, 1, InetAddress.getByName(ipAddress));
+        this.support            = new PropertyChangeSupport(this);
+    }
+
     public Node(Integer port) throws IOException
     {
         this.port       = port;
@@ -181,7 +192,15 @@ public class Node extends Task
                     }
                     catch (IOException e)
                     {
-                        e.printStackTrace();
+                        try
+                        {
+                            this.outputStream.flush();
+                            System.out.println("flushing the output buffer");
+                        }
+                        catch (IOException e1)
+                        {
+                            e1.printStackTrace();
+                        }
                     }
                 }
 

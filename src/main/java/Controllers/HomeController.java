@@ -1,5 +1,6 @@
 package Controllers;
 
+import DataStructures.BroadcastPacket;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -14,6 +15,7 @@ import javafx.stage.Stage;
 import javax.xml.soap.Text;
 import java.io.IOException;
 import java.net.*;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -152,34 +154,57 @@ public class HomeController
 
         try
         {
+            String hostAddress = Inet4Address.getLocalHost().getHostAddress();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/NodeSystem.fxml"));
+            AnchorPane nodeSystem = loader.load();
+            NodeSystemController controller = loader.<NodeSystemController>getController();
+
+            List<Node> children = nodePane.getChildren();
+
+            List<Manager.Node> cameraNodes = new ArrayList<>();
+            List<AnchorPane> cameraNodesGUI = new ArrayList<>();
+
             byte[] buff = new byte[1024];
-            DatagramSocket listenSock = new DatagramSocket();
+            DatagramSocket listenSock = new DatagramSocket(60000);
             DatagramPacket packet = new DatagramPacket(buff,1024);
-            if (!listenSock.isConnected())
+            listenSock.setSoTimeout(1000);
+
+            while (foundAddresses.size() < numOfNodes2Find)
             {
-                listenSock.connect(InetAddress.getByName("192.168.1.255"),60000);
+                    try
+                    {
+                        listenSock.receive(packet);
+                        BroadcastPacket broadcastPacket = new BroadcastPacket();
+                        broadcastPacket.setByteBuffer(ByteBuffer.wrap(packet.getData()),0);
+                        if (!foundAddresses.contains(broadcastPacket.port.get()))
+                        {
+                            foundAddresses.add(broadcastPacket.port.get());
+                            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/CameraNode.fxml"));
+                            Manager.Node nodeController = new Manager.Node(hostAddress,broadcastPacket.port.get());
+                            fxmlLoader.setController(nodeController);
+                            AnchorPane cameraGUINode = fxmlLoader.load();
+                            //todo: there has to be a better way of doing this, will probably have to use recursion!!!!
+                            Optional<Node> anchorPane = ((SplitPane)((AnchorPane)((SplitPane)cameraGUINode.getChildren().get(0)).getItems().get(0)).getChildren().get(0)).getItems().stream().findAny().filter(node -> node.getId().equals("labelHolder"));
+                            Label tempLabel = (Label)anchorPane.get().lookup("#nodeLabel");
+                            tempLabel.setText(" Node" + String.valueOf(broadcastPacket.port.get() - 50000) );
+                            cameraNodesGUI.add(cameraGUINode);
+
+                            cameraNodes.add(nodeController);
+                        }
+                    }
+                    catch (SocketTimeoutException e)
+                    {
+                        System.out.println("No packet received.");
+                    }
+
             }
 
-            while (foundAddresses.size() <= numOfNodes2Find)
-            {
-                if (listenSock.isConnected())
-                {
-                    listenSock.receive(packet);
+            controller.setCameraNodes(cameraNodes,cameraNodesGUI);
 
-                }
-                else
-                {
-                    System.out.println("UDP socket not connected.");
-                }
-            }
-        }
-        catch (SocketException e)
-        {
-            e.printStackTrace();
-        }
-        catch (UnknownHostException e)
-        {
-            e.printStackTrace();
+            Stage secondaryStage = new Stage();
+            secondaryStage.setTitle("Node System");
+            secondaryStage.setScene(new Scene(nodeSystem, -1, -1));
+            secondaryStage.show();
         }
         catch (IOException e)
         {

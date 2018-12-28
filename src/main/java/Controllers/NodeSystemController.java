@@ -63,10 +63,10 @@ public class NodeSystemController implements PropertyChangeListener
 
     public void setCameraNodes(List<Node> cameraNodes, List<AnchorPane> cameraGuiNodes)
     {
-        console = new Console(consoleOutput);
-        printStream = new PrintStream(console,true);
-        System.setOut(printStream);
-        System.setErr(printStream);
+//        console = new Console(consoleOutput);
+//        printStream = new PrintStream(console,true);
+//        System.setOut(printStream);
+//        System.setErr(printStream);
 
         this.cameraNodes = cameraNodes;
         for (Node node : this.cameraNodes )
@@ -150,10 +150,10 @@ public class NodeSystemController implements PropertyChangeListener
                     continue;
                 }
                 AnchorPane temp = (AnchorPane) anchorPane;
-                Label tempLabel = ((Label)((AnchorPane)((SplitPane)temp.getChildren().get(0)).getItems().get(0)).getChildren().get(0));
+                Label tempLabel = (Label) ((AnchorPane)((SplitPane)((AnchorPane)((SplitPane)temp.getChildren().get(0)).getItems().get(0)).getChildren().get(0)).getItems().get(0)).getChildren().get(0);
                 if (tempLabel.getText().equals(nodeId))
                 {
-                    capLight = (Rectangle) ((AnchorPane)((SplitPane)temp.getChildren().get(0)).getItems().get(1)).getChildren().get(0);
+                    capLight = (Rectangle) ((AnchorPane)((SplitPane)((AnchorPane)((SplitPane)temp.getChildren().get(0)).getItems().get(0)).getChildren().get(0)).getItems().get(1)).getChildren().get(0);
                     break;
                 }
 
