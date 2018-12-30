@@ -1,63 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="538.0" prefWidth="1068.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.NodeSystemController">
     <children>
-      <SplitPane dividerPositions="0.19324577861163228, 0.6735459662288931" prefHeight="540.0" prefWidth="1068.0" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="-1.0">
-        <items>
-          <AnchorPane maxWidth="300.0" minHeight="0.0" minWidth="300.0" prefHeight="160.0" prefWidth="100.0">
+      <SplitPane dividerPositions="0.7157598499061913" prefHeight="540.0" prefWidth="1068.0" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="-1.0">
+         <items>
+            <AnchorPane fx:id="gridViewAnchor" prefHeight="200.0" prefWidth="200.0" />
+            <AnchorPane prefHeight="538.0" prefWidth="413.0">
                <children>
-                  <GridPane fx:id="nodeList" gridLinesVisible="true" layoutX="-25.0" layoutY="179.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0">
-                    <columnConstraints>
-                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                    </columnConstraints>
-                  </GridPane>
+                  <SplitPane dividerPositions="0.11524163568773234" layoutX="41.0" layoutY="152.0" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0">
+                    <items>
+                      <AnchorPane maxHeight="80.0" minHeight="80.0" prefHeight="100.0" prefWidth="160.0">
+                           <children>
+                              <Label layoutX="99.0" layoutY="6.0" text="Broadcast Message" />
+                              <Button fx:id="captureButton" layoutX="215.0" layoutY="28.0" mnemonicParsing="false" onMouseClicked="#sendCaptureCommand" prefHeight="50.0" prefWidth="81.0" text="Capture" />
+                              <TextField fx:id="captureNameInput" layoutX="14.0" layoutY="28.0" prefHeight="25.0" prefWidth="193.0" promptText="Capture Name" />
+                              <ComboBox fx:id="nodeDropDown" layoutX="14.0" layoutY="54.0" prefHeight="25.0" prefWidth="193.0" />
+                           </children>
+                        </AnchorPane>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="409.0" prefWidth="300.0">
+                           <children>
+                              <TextArea fx:id="managerOutput" layoutX="50.0" layoutY="126.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0" />
+                           </children>
+                        </AnchorPane>
+                    </items>
+                  </SplitPane>
                </children>
             </AnchorPane>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
-               <children>
-                  <TextArea fx:id="consoleOutput" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0" />
-               </children></AnchorPane>
-            <AnchorPane maxWidth="361.0" minWidth="361.0" prefHeight="538.0" prefWidth="361.0">
-               <children>
-                  <GridPane gridLinesVisible="true" layoutX="6.0" prefHeight="90.0" prefWidth="366.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="-1.0">
-                    <columnConstraints>
-                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="286.0" minWidth="0.0" prefWidth="86.0" />
-                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="307.0" minWidth="10.0" prefWidth="221.0" />
-                    </columnConstraints>
-                    <rowConstraints>
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                    </rowConstraints>
-                     <children>
-                        <AnchorPane prefHeight="200.0" GridPane.columnIndex="1">
-                           <children>
-                              <TextField fx:id="captureTitle" promptText="Capture Title" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0" />
-                           </children>
-                        </AnchorPane>
-                        <AnchorPane>
-                           <children>
-                              <Button fx:id="captureButton" layoutX="11.0" layoutY="4.0" mnemonicParsing="false" onMouseClicked="#captureCommand" text="Start Capture" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0" />
-                           </children>
-                        </AnchorPane>
-                        <AnchorPane GridPane.rowIndex="1">
-                           <children>
-                              <Button fx:id="saveConfigButton" layoutX="27.0" layoutY="3.0" mnemonicParsing="false" onMouseClicked="#saveConfiguration" text="Save Config" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0" />
-                           </children>
-                        </AnchorPane>
-                        <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">
-                           <children>
-                              <TextField fx:id="saveConfigPath" layoutX="23.0" layoutY="2.0" promptText="Save Config Path" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-1.0" AnchorPane.topAnchor="-1.0" />
-                           </children>
-                        </AnchorPane>
-                     </children>
-                  </GridPane>
-               </children>
-            </AnchorPane>
-        </items>
+         </items>
       </SplitPane>
    </children>
 </AnchorPane>

@@ -1,194 +1,138 @@
 package Controllers;
 
-import DataStructures.CaptureCommand;
-import DataStructures.StatusReport;
-import Manager.Node;
-import javafx.application.Platform;
+import DataStructures.GenericReturnStruct;
+import DataStructures.ReturnStruct;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
+import javafx.scene.layout.RowConstraints;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.List;
 
 
-public class NodeSystemController implements PropertyChangeListener
+public class NodeSystemController extends Controller implements PropertyChangeListener
 {
-
-    @FXML
-    public GridPane nodeList;
-
-    // capture variables
-    @FXML
-    public TextField captureTitle;
 
     @FXML
     public Button captureButton;
 
-    // configuration save variables
     @FXML
-    public TextField saveConfigPath;
-
-    @FXML
-    public Button saveConfigButton;
+    public TextField captureNameInput;
 
     @FXML
-    public TextArea consoleOutput;
+    public ComboBox nodeDropDown;
 
-    private List<Node> cameraNodes;
-    private List<Thread> cameraThreads;
-    private StringBuilder stringBuilder;
-    private PrintStream printStream;
-    private Console console;
+    @FXML
+    public TextArea managerOutput;
 
+    @FXML
+    public AnchorPane gridViewAnchor;
+
+    public GridPane gridView;
+
+    private Integer numOfNodes;
 
     public NodeSystemController()
     {
-        cameraThreads = new ArrayList<>();
-        stringBuilder = new StringBuilder(100);
-
-//        Thread updateThread = new Thread(new UpdateClass());
-//        updateThread.start();
+        super();
     }
 
-    public void setCameraNodes(List<Node> cameraNodes, List<AnchorPane> cameraGuiNodes)
+    @Override
+    public void create(ReturnStruct param)
     {
-//        console = new Console(consoleOutput);
-//        printStream = new PrintStream(console,true);
-//        System.setOut(printStream);
-//        System.setErr(printStream);
+        this.messageManager = param.getMessageManager();
+        this.messageManager.init((Integer) ((GenericReturnStruct)param).getVar());
+        this.settings = param.getSettings();
+        this.numOfNodes = (Integer )((GenericReturnStruct)param).getVar();
 
-        this.cameraNodes = cameraNodes;
-        for (Node node : this.cameraNodes )
+        ArrayList observableList = new ArrayList();
+        // set the combo box
+        observableList.add("Broadcast to All Nodes");
+        for (int i = 0; i < this.numOfNodes; i++)
         {
-            node.addPropertyChangeListener(this);
-            this.cameraThreads.add(new Thread(node));
+            observableList.add("Node" + String.valueOf(i));
         }
 
-        // add the gui nodes to the nodes list
-        for (int i = 0; i < cameraGuiNodes.size(); i++)
-        {
-            this.nodeList.add(cameraGuiNodes.get(i),0,i);
-        }
+        this.nodeDropDown.setItems(FXCollections.observableList(observableList));
 
-        // start the threads
-        for (Thread thread : this.cameraThreads)
-        {
-            thread.start();
-        }
-    }
+        // set grid pane for the nodes
+        int rows = (int) this.settings.get("rows");
+        int cols = (int) Math.ceil(numOfNodes/rows);
 
-    public void captureCommand(MouseEvent mouseEvent)
-    {
-        if (captureButton.getText().equals("Start Capture")) // send a start capture command
+        if (cols < 1){ cols = 1; }
+
+        this.gridView = new GridPane();
+        ColumnConstraints columnConstraints = new ColumnConstraints();
+        columnConstraints.setPercentWidth(100.0/(double)cols);
+        this.gridView.getColumnConstraints().add(columnConstraints);
+        RowConstraints rowConstraints = new RowConstraints();
+        rowConstraints.setPercentHeight(100.0/(double)rows);
+        this.gridView.getRowConstraints().add(rowConstraints);
+        this.gridView.setGridLinesVisible(true);
+        this.gridViewAnchor.getChildren().add(this.gridView);
+
+        AnchorPane.setBottomAnchor(this.gridView,0.0);
+        AnchorPane.setTopAnchor(this.gridView,0.0);
+        AnchorPane.setLeftAnchor(this.gridView,0.0);
+        AnchorPane.setRightAnchor(this.gridView,0.0);
+
+//         create nodes and add them to the grid pane
+        GenericReturnStruct struct = new GenericReturnStruct<Integer>();
+        int nodeIdx = 0;
+        for (int i = 0; i < rows; i++)
         {
-            String nextCapTitle = captureTitle.getText();
-            CaptureCommand startCapCmd = new CaptureCommand();
-            startCapCmd.setByteBuffer(ByteBuffer.wrap(new byte[startCapCmd.size()]),0);
-            startCapCmd.size.set(startCapCmd.size());
-            startCapCmd.type.set(1);
-            startCapCmd.command.set(1);
-            if (nextCapTitle.equals(""))
+            for (int j = 0; j < cols; j++)
             {
-                startCapCmd.filename.set("none");
+                // create the new node
+                FXMLLoader fxmlLoader = new FXMLLoader();
+                try
+                {
+                    if (nodeIdx >= this.numOfNodes)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        struct.setVar(nodeIdx);
+                        Node node = fxmlLoader.load(getClass().getResourceAsStream("/CameraNode.fxml"));
+                        Controller tmp = fxmlLoader.getController();
+                        ((NodeController)tmp).nodeLabel.setText("Node" + String.valueOf(nodeIdx));
+                        tmp.create(struct);
+                        this.gridView.add(node,j,i);
+                        nodeIdx++;
+                    }
+                }
+                catch (IOException e)
+                {
+                    //todo : create an bit manager to handle all errors and display them on the output console
+                    e.printStackTrace();
+                }
             }
-            else
-            {
-                startCapCmd.filename.set(nextCapTitle);
-            }
-
-
-            for (Node node : this.cameraNodes)
-            {
-                node.sendCommand(startCapCmd);
-            }
-            captureButton.setText("Stop Capture"); // set capture button to show stop
         }
-        else // send a stop capture command
-        {
-            CaptureCommand startCapCmd = new CaptureCommand();
-            startCapCmd.setByteBuffer(ByteBuffer.wrap(new byte[startCapCmd.size()]),0);
-            startCapCmd.size.set(startCapCmd.size());
-            startCapCmd.type.set(1);
-            startCapCmd.command.set(0);
-
-            for (Node node : this.cameraNodes)
-            {
-                node.sendCommand(startCapCmd);
-            }
-            captureButton.setText("Start Capture"); // set capture button to show start
-        }
-    }
-
-    public void saveConfiguration(MouseEvent mouseEvent)
-    {
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt)
     {
-        String nodeId = " " + evt.getPropertyName();
-        StatusReport statusReport = (StatusReport) evt.getNewValue();
-
-        Platform.runLater(()->{
-            Rectangle capLight = null;
-            for(javafx.scene.Node anchorPane : this.nodeList.getChildren())
-            {
-                Class clazz = anchorPane.getClass();
-                if (!clazz.getName().equals("javafx.scene.layout.AnchorPane"))
-                {
-                    continue;
-                }
-                AnchorPane temp = (AnchorPane) anchorPane;
-                Label tempLabel = (Label) ((AnchorPane)((SplitPane)((AnchorPane)((SplitPane)temp.getChildren().get(0)).getItems().get(0)).getChildren().get(0)).getItems().get(0)).getChildren().get(0);
-                if (tempLabel.getText().equals(nodeId))
-                {
-                    capLight = (Rectangle) ((AnchorPane)((SplitPane)((AnchorPane)((SplitPane)temp.getChildren().get(0)).getItems().get(0)).getChildren().get(0)).getItems().get(1)).getChildren().get(0);
-                    break;
-                }
-
-            }
-
-            Rectangle finalCapLight = capLight;
-            if (statusReport.status.get() == 0) // node is not capturing
-            {
-                assert finalCapLight != null;
-                finalCapLight.setFill(Color.RED);
-            }
-            else if (statusReport.status.get() == 1)
-            {
-                assert finalCapLight != null;
-                finalCapLight.setFill(Color.GREEN);
-            }
-        });
+        //todo: received a message from the message manager, set statuses and outputs.
     }
 
-    public static class Console extends OutputStream
+    public void sendCaptureCommand(MouseEvent mouseEvent)
     {
-
-        private TextArea output;
-
-        public Console(TextArea ta) {
-            this.output = ta;
-        }
-
-        @Override
-        public void write(int i) throws IOException
-        {
-            Platform.runLater(()->{
-                output.appendText(String.valueOf((char) i));
-            });
-
-        }
+        //todo: build command and send it to the message manager for handling.
+        System.out.println("hello");
     }
+
 }
