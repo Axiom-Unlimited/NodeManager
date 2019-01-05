@@ -2,6 +2,9 @@ package Controllers;
 
 import DataStructures.GenericReturnStruct;
 import DataStructures.ReturnStruct;
+import DatagramStructures.BroadcastPackage;
+import DatagramStructures.NodeState;
+import DatagramStructures.NodeStatusPackage;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -15,11 +18,15 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class NodeSystemController extends Controller implements PropertyChangeListener
@@ -40,9 +47,15 @@ public class NodeSystemController extends Controller implements PropertyChangeLi
     @FXML
     public AnchorPane gridViewAnchor;
 
-    public GridPane gridView;
+    private GridPane gridView;
 
     private Integer numOfNodes;
+
+    private List nodeControllers;
+
+    // these are for locking the gui
+    private Boolean guiLock;
+    private Integer lockingNode;
 
     public NodeSystemController()
     {
@@ -52,17 +65,18 @@ public class NodeSystemController extends Controller implements PropertyChangeLi
     @Override
     public void create(ReturnStruct param)
     {
+        this.guiLock = false;
         this.messageManager = param.getMessageManager();
-        this.messageManager.init((Integer) ((GenericReturnStruct)param).getVar());
         this.settings = param.getSettings();
+        this.messageManager.init((Integer) ((GenericReturnStruct)param).getVar(),this.settings,this);
         this.numOfNodes = (Integer )((GenericReturnStruct)param).getVar();
 
         ArrayList observableList = new ArrayList();
         // set the combo box
-        observableList.add("Broadcast to All Nodes");
+        observableList.add("broadcast to All Nodes");
         for (int i = 0; i < this.numOfNodes; i++)
         {
-            observableList.add("Node" + String.valueOf(i));
+            observableList.add("Node " + String.valueOf(i));
         }
 
         this.nodeDropDown.setItems(FXCollections.observableList(observableList));
@@ -91,6 +105,7 @@ public class NodeSystemController extends Controller implements PropertyChangeLi
 //         create nodes and add them to the grid pane
         GenericReturnStruct struct = new GenericReturnStruct<Integer>();
         int nodeIdx = 0;
+        this.nodeControllers = new ArrayList();
         for (int i = 0; i < rows; i++)
         {
             for (int j = 0; j < cols; j++)
@@ -108,8 +123,9 @@ public class NodeSystemController extends Controller implements PropertyChangeLi
                         struct.setVar(nodeIdx);
                         Node node = fxmlLoader.load(getClass().getResourceAsStream("/CameraNode.fxml"));
                         Controller tmp = fxmlLoader.getController();
-                        ((NodeController)tmp).nodeLabel.setText("Node" + String.valueOf(nodeIdx));
+                        ((NodeController)tmp).nodeLabel.setText("Node " + String.valueOf(nodeIdx));
                         tmp.create(struct);
+                        this.nodeControllers.add(tmp);
                         this.gridView.add(node,j,i);
                         nodeIdx++;
                     }
@@ -126,13 +142,101 @@ public class NodeSystemController extends Controller implements PropertyChangeLi
     @Override
     public void propertyChange(PropertyChangeEvent evt)
     {
-        //todo: received a message from the message manager, set statuses and outputs.
+        NodeStatusPackage state = (NodeStatusPackage) evt.getNewValue();
+        NodeController controllerRef = (NodeController) this.nodeControllers.get(state.nodeId.get());
+
+        if (state.captureState.get()) // capturing
+        {
+            controllerRef.nodeIdiotLight.setFill(Color.GREEN);
+        }
+        else // not capturing
+        {
+            controllerRef.nodeIdiotLight.setFill(Color.RED);
+        }
+
+        // todo: add bit messages to the gui text output
+
     }
 
     public void sendCaptureCommand(MouseEvent mouseEvent)
     {
-        //todo: build command and send it to the message manager for handling.
-        System.out.println("hello");
+        // get the name of the capture file if there is one else send the date time.
+        String capName = captureNameInput.getText();
+        if (capName.equals(""))
+        {
+            capName = "none";
+        }
+
+        if(nodeDropDown.getValue().toString().equals("broadcast to All Nodes"))
+        {
+            if(this.guiLock)
+            {
+                //todo: send message to the bit manager
+            }
+            else
+            {
+                BroadcastPackage broadcastPackage = new BroadcastPackage();
+                broadcastPackage.setByteBuffer(ByteBuffer.wrap(new byte[broadcastPackage.size()]),0);
+                broadcastPackage.type.set(0xf001);
+
+                boolean cap = false;
+                if (captureButton.getText().equals("Halt"))
+                {
+                    captureButton.setText("Capture");
+                }
+                else
+                {
+                    cap = true;
+                    captureButton.setText("Halt");
+                }
+                // broadcast to all nodes
+                for (int i = 0; i < numOfNodes; i++)
+                {
+                    broadcastPackage.nodeStates[i].captureName.set(capName);
+                    broadcastPackage.nodeStates[i].captureState.set(cap);
+                }
+
+                broadcastPackage.type.set(0xf001);
+                this.messageManager.broadcast(broadcastPackage);
+            }
+        }
+        else
+        {
+            // broadcast to one node
+            BroadcastPackage broadcastPackage = new BroadcastPackage();
+            broadcastPackage.setByteBuffer(ByteBuffer.wrap(new byte[broadcastPackage.size()]),0);
+            if (this.guiLock)
+            {
+                //check to see if the node that is locking the gui is being told to unlock it and halt its capture
+                String[] vals = this.nodeDropDown.getValue().toString().split("\\s+");
+                if (Integer.parseInt(vals[1]) == this.lockingNode)
+                {
+                    this.lockingNode = -1;
+                    this.guiLock = false;
+                    broadcastPackage.type.set(0xf001);
+                    broadcastPackage.nodeStates[Integer.parseInt(vals[1])].captureName.set(capName);
+                    broadcastPackage.nodeStates[Integer.parseInt(vals[1])].captureState.set(false);
+                    captureButton.setText("Capture");
+                    this.messageManager.broadcast(broadcastPackage);
+                }
+                else
+                {
+                    //todo: send message to the bit manager
+                }
+            }
+            else
+            {
+                String[] vals = this.nodeDropDown.getValue().toString().split("\\s+");
+                this.guiLock = true;
+                this.lockingNode = Integer.parseInt(vals[1]);
+                broadcastPackage.type.set(0xf001);
+                broadcastPackage.nodeStates[Integer.parseInt(vals[1])].captureName.set(capName);
+                broadcastPackage.nodeStates[Integer.parseInt(vals[1])].captureState.set(true);
+                captureButton.setText("Halt");
+                this.messageManager.broadcast(broadcastPackage);
+            }
+        }
+
     }
 
 }
