@@ -41,7 +41,7 @@ public class MessageManager
                 this.nodes.add(node);
             }
 
-            this.broadcastSocket = new DatagramSocket((int) settings.get("broadcastPort"));
+            this.broadcastSocket = new DatagramSocket();
             this.broadcastSocket.setBroadcast(true);
 
             this.messageBroadcastThread = new Thread(new MessageBroadcastThread());
@@ -86,7 +86,7 @@ public class MessageManager
                             , currentBroadcast.getByteBuffer().array().length, broadcastAddress, (int) settings.get("broadcastPort"));
 
                     broadcastSocket.send(packet);
-
+//                    System.out.println("sending message!");
                 }
                 catch (IOException e)
                 {
